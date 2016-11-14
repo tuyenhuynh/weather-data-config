@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:sw="http://www.sitewhere.com/schema/sitewhere/ce/tenant"
+	xmlns:global="http://www.sitewhere.com/schema/sitewhere/ce"
+	xsi:schemaLocation="
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+           http://www.sitewhere.com/schema/sitewhere/ce http://www.sitewhere.org/schema/sitewhere/ce/current/sitewhere.xsd
+           http://www.sitewhere.com/schema/sitewhere/ce/tenant http://www.sitewhere.org/schema/sitewhere/ce/current/sitewhere-tenant.xsd">
+  <property-placeholder ignore-resource-not-found="true" location="file:${sitewhere.home}/conf/tenants/${tenant.id}/sitewhere-tenant.properties" xmlns="http://www.springframework.org/schema/context"/>
+    <sw:tenant-configuration xmlns:sw="http://www.sitewhere.com/schema/sitewhere/ce/tenant">
+    <sw:globals/>
+    <sw:tenant-datastore>
+      <sw:mongo-tenant-datastore bulkInsertMaxChunkSize="1000" useBulkEventInserts="true"/>
+      <sw:hazelcast-cache/>
+      <sw:groovy-device-model-initializer scriptPath="initializer/deviceModel.groovy"/>
+      <sw:default-asset-model-initializer/>
+      <sw:default-schedule-model-initializer/>
+    </sw:tenant-datastore>
+    <sw:device-communication>
+      <sw:event-sources>
+        <sw:socket-event-source numThreads="5" port="8484" sourceId="123456">
+          <sw:groovy-interaction-handler-factory scriptPath="example.groovy"/>
+          <sw:groovy-event-decoder scriptPath="ComplexSocketProcessingTest.groovy"/>
+        </sw:socket-event-source>
+      </sw:event-sources>
+      <sw:event-sources>
+                <!-- Event source for polling an external REST service -->
+        <sw:polling-rest-event-source baseUrl="http://api.wunderground.com/api/ac809371f21e8694/" 
+                        username="admin" password="password" pollIntervalMs="10000" 
+                        scriptPath="parseWeatherRest.groovy" sourceId="rest" />
+        </sw:polling-rest-event-source>
+      </sw:event-sources>
+      <sw:device-services>
+        <sw:default-registration-manager allowNewDevices="true"/>
+        <sw:symbol-generator-manager>
+          <sw:qr-code-symbol-generator backgroundColor="FFFFFFFF" foregroundColor="FF111111" height="250" id="qrcode" name="Basic QR Code" width="250"/>
+        </sw:symbol-generator-manager>
+        <sw:default-presence-manager checkInterval="PT5M" presenceMissingInterval="PT8H"/>
+      </sw:device-services>
+      <sw:batch-operations>
+        <sw:default-batch-operation-manager throttleDelayMs="1000"/>
+      </sw:batch-operations>
+      <sw:command-routing>
+        <sw:specification-mapping-router defaultDestination="default">
+          <sw:mapping destination="hybrid" specification="d2604433-e4eb-419b-97c7-88efe9b2cd41"/>
+          <sw:mapping destination="hybrid" specification="7dfd6d63-5e8d-4380-be04-fc5c73801dfb"/>
+          <sw:mapping destination="hybrid" specification="5a95f3f2-96f0-47f9-b98d-f5c081d01948"/>
+          <sw:mapping destination="json" specification="964e7613-dab3-4fb3-8919-266a91370884"/>
+        </sw:specification-mapping-router>
+      </sw:command-routing>
+      <sw:command-destinations>
+        <sw:mqtt-command-destination destinationId="default" hostname="localhost" port="1883">
+          <sw:protobuf-command-encoder/>
+          <sw:hardware-id-topic-extractor commandTopicExpr="SiteWhere/commands/%s" systemTopicExpr="SiteWhere/system/%s"/>
+        </sw:mqtt-command-destination>
+        <sw:mqtt-command-destination destinationId="hybrid" hostname="localhost" port="1883">
+          <sw:java-protobuf-hybrid-encoder/>
+          <sw:hardware-id-topic-extractor commandTopicExpr="SiteWhere/commands/%s" systemTopicExpr="SiteWhere/system/%s"/>
+        </sw:mqtt-command-destination>
+        <sw:mqtt-command-destination destinationId="json" hostname="localhost" port="1883">
+          <sw:json-command-encoder/>
+          <sw:hardware-id-topic-extractor commandTopicExpr="SiteWhere/commands/%s" systemTopicExpr="SiteWhere/system/%s"/>
+        </sw:mqtt-command-destination>
+      </sw:command-destinations>
+    </sw:device-communication>
+    <sw:event-processing>
+      <sw:inbound-processing-strategy>
+        <sw:blocking-queue-inbound-processing-strategy enableMonitoring="false" maxQueueSize="10000" monitoringIntervalSec="3" numEventProcessorThreads="10"/>
+      </sw:inbound-processing-strategy>
+      <sw:inbound-processing-chain>
+        <sw:event-storage-processor/>
+        <sw:registration-processor/>
+        <sw:device-stream-processor/>
+      </sw:inbound-processing-chain>
+      <sw:outbound-processing-strategy>
+        <sw:blocking-queue-outbound-processing-strategy maxQueueSize="10000" numEventProcessorThreads="10"/>
+      </sw:outbound-processing-strategy>
+      <sw:outbound-processing-chain>
+        <sw:command-delivery-event-processor/>
+        <sw:hazelcast-event-processor/>
+      </sw:outbound-processing-chain>
+    </sw:event-processing>
+    <sw:asset-management/>
+  </sw:tenant-configuration>
+</beans>
