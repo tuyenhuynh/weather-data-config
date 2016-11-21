@@ -30,6 +30,7 @@
         <sw:polling-rest-event-source baseUrl="http://api.wunderground.com/api/ac809371f21e8694/" 
                         username="admin" password="password" pollIntervalMs="10000" 
                         scriptPath="parseWeatherRest.groovy" sourceId="rest" />
+	  <sw:groovy-event-decoder scriptPath="parseWeatherRest.groovy" />
         </sw:polling-rest-event-source>
       </sw:event-sources>
       <sw:device-services>
