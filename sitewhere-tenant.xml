@@ -68,7 +68,7 @@
     </sw:device-communication>
     <sw:event-processing>
       <sw:inbound-processing-strategy>
-        <sw:blocking-queue-inbound-processing-strategy enableMonitoring="false" maxQueueSize="10000" monitoringIntervalSec="3" numEventProcessorThreads="10"/>
+        <sw:blocking-queue-inbound-processing-strategy enableMonitoring="true" maxQueueSize="10000" monitoringIntervalSec="3" numEventProcessorThreads="10"/>
       </sw:inbound-processing-strategy>
       <sw:inbound-processing-chain>
         <sw:event-storage-processor/>
