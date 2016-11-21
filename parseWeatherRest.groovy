@@ -13,5 +13,6 @@ def nodes = rest.getJsonNode "nodes"
 
 for (JsonNode node : nodes) {
     def response = node.get("response")
-    println response
+    def local = response.get("local")	 
+    println local
 }
