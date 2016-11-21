@@ -7,7 +7,7 @@
 import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.*
-com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 def nodes = rest.getJsonNode "nodes"
 
