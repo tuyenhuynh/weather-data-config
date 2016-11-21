@@ -13,7 +13,6 @@
     <sw:globals/>
     <sw:tenant-datastore>
       <sw:mongo-tenant-datastore bulkInsertMaxChunkSize="1000" useBulkEventInserts="true"/>
-      <sw:hazelcast-cache/>
       <sw:groovy-device-model-initializer scriptPath="initializer/deviceModel.groovy"/>
       <sw:default-asset-model-initializer/>
       <sw:default-schedule-model-initializer/>
